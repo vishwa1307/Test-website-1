@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decentralized Freelance Marketplace</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url('background img/bg.png') no-repeat center center/cover;
+            color: black;
+        }
+        .container {
+            width: 90%;
+            max-width: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        h1, h2 {
+            margin: 0 0 20px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            background-color: #151515;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #353637;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Role Selection -->
+        <div id="role-selection">
+            <h1>Welcome</h1>
+            <p>Choose your role:</p>
+            <button class="btn" onclick="chooseRole('client')">Client</button>
+            <button class="btn" onclick="chooseRole('freelancer')">Freelancer</button>
+        </div>
+
+        <!-- Options for Register or Login -->
+        <div id="options" class="hidden">
+            <h2 id="role-title"></h2>
+            <button class="btn" onclick="showForm('register')">Register</button>
+            <button class="btn" onclick="showForm('login')">Login</button>
+            <button class="btn" onclick="goBack()">Back</button>
+        </div>
+
+        <!-- Registration Forms -->
+        <div id="register-form" class="hidden">
+            <h2>Register</h2>
+            <form id="registration-form" onsubmit="event.preventDefault(); handleRegister();">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div id="extra-fields" class="hidden">
+                    <div class="form-group">
+                        <label for="experience">Experience (in years)</label>
+                        <input type="number" id="experience" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="skillset">Skillset</label>
+                        <input type="text" id="skillset">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Set Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn">Register</button>
+                <button type="button" class="btn" onclick="goBack()">Back</button>
+            </form>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-form" class="hidden">
+            <h2>Login</h2>
+            <form onsubmit="event.preventDefault(); handleLogin();">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+                <button type="button" class="btn" onclick="goBack()">Back</button>
+            </form>
+        </div>
+
+        <!-- Homepage -->
+        <div id="homepage" class="hidden">
+            <h1>Website still in development</h1>
+        </div>
+    </div>
+
+    <script>
+        let selectedRole = null;
+
+        function chooseRole(role) {
+            selectedRole = role;
+            document.getElementById('role-title').innerText = role === 'client' ? 'Register as Client' : 'Register as Freelancer';
+            document.getElementById('role-selection').classList.add('hidden');
+            document.getElementById('options').classList.remove('hidden');
+        }
+
+        function showForm(type) {
+            document.getElementById('options').classList.add('hidden');
+            if (type === 'register') {
+                document.getElementById('register-form').classList.remove('hidden');
+                if (selectedRole === 'freelancer') {
+                    document.getElementById('extra-fields').classList.remove('hidden');
+                } else {
+                    document.getElementById('extra-fields').classList.add('hidden');
+                }
+            } else {
+                document.getElementById('login-form').classList.remove('hidden');
+            }
+        }
+
+        function goBack() {
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('options').classList.add('hidden');
+            document.getElementById('role-selection').classList.remove('hidden');
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            let extra = {};
+            if (selectedRole === 'freelancer') {
+                const experience = document.getElementById('experience').value;
+                const skillset = document.getElementById('skillset').value;
+                extra = { experience, skillset };
+            }
+
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            if (users.some(user => user.email === email)) {
+                alert('Email already in use.');
+                return;
+            }
+
+            users.push({ name, email, password, role: selectedRole, ...extra });
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Registration Successful!');
+            showHomePage();
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const user = users.find(user => user.email === email && user.password === password);
+
+            if (!user) {
+                alert('Invalid Email or Password.');
+                return;
+            }
+
+            alert('Login Successful!');
+            showHomePage();
+        }
+
+        function showHomePage() {
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('homepage').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
